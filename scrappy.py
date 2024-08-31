@@ -1,10 +1,14 @@
+import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-# Cargar el archivo HTML localmente
-with open("/home/damian/mirepo/scrappy/pypi_modules.html", "r", encoding="utf-8") as file:
-    soup = BeautifulSoup(file, 'html.parser')
-print(soup)
+# URL de PyPI que deseas analizar
+URL = "https://pypi.org/search/?q="
+
+# Realizar la solicitud HTTP a PyPI
+response = requests.get(URL)
+soup = BeautifulSoup(response.content, 'html.parser')
+
 # Inicializar una lista para almacenar las categorías
 categories = []
 

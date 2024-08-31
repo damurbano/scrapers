@@ -1,0 +1,32 @@
+# Evitar que los archivos CSV se suban al repositorio
+*.csv
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Archivos de configuración de IDEs/editores
+.vscode/
+.idea/
+*.swp
+
+# Archivos de configuración de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de log
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
+*.old
+*.orig
