@@ -45,7 +45,11 @@ El módulo `scrappy.py` es responsable de extraer y guardar las categorías de P
 
 #### Ejemplo de Uso
 
-```
+```python
+import scrappy
+
+# Guardar las categorías en un archivo CSV
+scrappy.save_categories()
 
 ```
 
@@ -71,7 +75,7 @@ Este comando creará un archivo `pypi_categories.csv` con todas las categorías 
 2. **Instala las Dependencias** :
 
    ```
-   poetry 
+   poetry install
    ```
 3. **Configura WebDriver** :
 
