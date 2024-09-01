@@ -97,7 +97,7 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
 
 
 # Ejemplo de uso
-module_name = "scrap"
+module_name = "hola"
 languages = ["Python", "C"]
 df = get_pypi_modules(module_name, languages)
 
@@ -105,4 +105,4 @@ df = get_pypi_modules(module_name, languages)
 print(df.head())
 
 # Guardar los datos en un archivo CSV
-df.to_csv("django_modules_all_pages.csv", index=False)
+df.to_csv(f"{module_name}.csv", index=False)
