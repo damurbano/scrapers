@@ -1,7 +1,6 @@
-
 # Scrappy
 
-![Scrappy](./path/to/image.png)
+    ![1725227622704](image/README/1725227622704.png)
 
 **Scrappy** es una herramienta de scraping en Python diseñada para extraer información de módulos de PyPI utilizando Selenium y BeautifulSoup. Esta herramienta permite recopilar datos detallados sobre los módulos de PyPI, incluidos su nombre, versión, fecha de creación y descripción, y categorizarlos para facilitar futuras búsquedas.
 
@@ -33,7 +32,6 @@ print(df.head())
 # Guardar los datos en un archivo CSV
 df.to_csv(f"{module_name}.csv", index=False)
 ```
-
 
 ### `scrappy.py` - Módulo para Guardar Categorías en un CSV
 
