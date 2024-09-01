@@ -1,6 +1,9 @@
 # Scrappy
 
-    ![1725227622704](image/README/1725227622704.png)
+<p align="center">
+  <img src="./image/README/1725227622704.png" alt="Scrappy" />
+</p>
+
 
 **Scrappy** es una herramienta de scraping en Python diseñada para extraer información de módulos de PyPI utilizando Selenium y BeautifulSoup. Esta herramienta permite recopilar datos detallados sobre los módulos de PyPI, incluidos su nombre, versión, fecha de creación y descripción, y categorizarlos para facilitar futuras búsquedas.
 
