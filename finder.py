@@ -78,7 +78,10 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
             # Ir a la siguiente página si no es la última
             if page < last_page_number:
                 try:
-                    next_button = driver.find_element(By.LINK_TEXT, "Siguiente")
+                    next_button = driver.find_element(
+                        By.XPATH,
+                        "//a[contains(@class, 'button-group__button') and contains(@href, 'page=')]",
+                    )
                     next_button.click()
                     # Esperar un momento para que la siguiente página cargue
                     time.sleep(2)
