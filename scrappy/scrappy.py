@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+
 # URL de PyPI que deseas analizar
 URL = "https://pypi.org/search/?q="
 
@@ -39,7 +40,8 @@ def get_categories(save=False):
 
         # Mostrar las primeras categorías extraídas
         print("Categorías y sus valores:")
-        print(category_df)
+
+        # print(category_df)
 
         if save:
             # Guardar los datos en un archivo CSV

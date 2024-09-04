@@ -38,12 +38,9 @@ print(df.head())
 df.to_csv(f"{module_name}.csv", index=False)
 ```
 
-### `scrappy.py` - Módulo para Guardar Categorías en un CSV
+### `scrappy.py` - Módulo para obtener y guardar Categorías en un CSV
 
-El módulo `scrappy.py` es responsable de extraer y guardar las categorías de PyPI en un archivo CSV, facilitando la categorización y búsqueda personalizada de módulos.
-
-* **Extracción de Categorías** : Analiza el HTML de PyPI para extraer todas las categorías disponibles, como "Development Status", "Intended Audience", etc.
-* **Organización en CSV** : Guarda las categorías y subcategorías extraídas en un archivo CSV, permitiendo su uso en futuras búsquedas y análisis.
+Este proyecto incluye un script para extraer categorías y subcategorías del Python Package Index (PyPI). Utiliza requests para realizar solicitudes HTTP y BeautifulSoup para analizar el contenido HTML. Los datos extraídos se organizan en un DataFrame de pandas y se pueden guardar en un archivo CSV para su posterior uso.
 
 #### Ejemplo de Uso
 
@@ -51,11 +48,11 @@ El módulo `scrappy.py` es responsable de extraer y guardar las categorías de P
 import scrappy
 
 # Guardar las categorías en un archivo CSV
-scrappy.save_categories()
+scrappy.get_categories()
 
 ```
 
-Este comando creará un archivo `pypi_categories.csv` con todas las categorías y subcategorías organizadas.
+Si deseas guardar los datos en un archivo CSV, modifica la llamada a get_categories pasándole save=True.
 
 ## Requisitos
 
@@ -63,6 +60,9 @@ Este comando creará un archivo `pypi_categories.csv` con todas las categorías 
 * Selenium
 * BeautifulSoup
 * Pandas
+* Requests
+* Colorama
+* Tabulate
 * WebDriver compatible (como ChromeDriver)
 
 ## Instalación
@@ -70,7 +70,7 @@ Este comando creará un archivo `pypi_categories.csv` con todas las categorías 
 1. **Clona el Repositorio** :
 
    ```
-   git clone https://github.com/tu-usuario/scrappy.git
+   git clone https://github.com/damurbano/scrappy.git
    cd scrappy
 
    ```

@@ -104,6 +104,10 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
     return df
 
 
+# TODO: Del módulo superior crear una modificación que permita usar los valores de get_categories. get_pypi_modules(category, languages -> item?: list, module_name: str)..
+# TODO: Crear un modulo que guarde en un json las categorias con sus items, para luego utilizarlo en get_pypi_modules, para constatar los argumentos pasados. Debería incluir una funcion que chequee la estructura de la pagina y si los itemes o las categorias son distintas lanzar un warning y un aviso de que se estan actualizando los parametros
+
+
 def search(package_name: str) -> pd.DataFrame:
     """
     Función que utiliza Selenium para recopilar módulos en PyPI basados en el nombre del paquete.
