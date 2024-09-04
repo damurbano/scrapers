@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 URL = "https://pypi.org/search/?q="
 
 
-def get_categories(save=False):
+def get_categories(save=False, path: str = "."):
     """Saves the categories if save is True and returns it as data frame"""
 
     try:
@@ -45,7 +45,8 @@ def get_categories(save=False):
 
         if save:
             # Guardar los datos en un archivo CSV
-            category_df.to_csv("pypi_categories.csv", index=False)
+            print(path + "/pypi_categories.csv")
+            category_df.to_csv(path + "/pypi_categories.csv", index=False)
         return category_df
 
     except requests.exceptions.Timeout:

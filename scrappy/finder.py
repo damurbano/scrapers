@@ -13,7 +13,9 @@ from tabulate import tabulate
 init(autoreset=True)
 
 
-def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
+def get_pypi_modules(
+    module_name: str, languages: list, save: bool = False, path: str = "."
+) -> pd.DataFrame:
     """
     Función que utiliza Selenium para recopilar módulos de todas las páginas en PyPI,
     asegurándose de cerrar el navegador al terminar.
@@ -99,6 +101,10 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
 
     # Crear un DataFrame de Pandas para organizar los datos
     df = pd.DataFrame(all_modules)
+    if save:
+        # Guardar los datos en un archivo CSV
+        print(path + "/" + "".join(languages) + f"_{module_name}.csv")
+        df.to_csv(path + "/" + "".join(languages) + f"_{module_name}.csv", index=False)
     colored_df(df)
 
     return df
@@ -223,7 +229,7 @@ if __name__ == "__main__":
     ###Ejemplo de uso
     MODULETEST = "hola"
     languages_list = ["Python", "C"]
-    data_frame = get_pypi_modules(MODULETEST, languages_list)
+    data_frame = get_pypi_modules(MODULETEST, languages_list, save=True)
     # # Guardar los datos en un archivo CSV
     # data_frame.to_csv(f"{MODULETEST}.csv", index=False)
 
