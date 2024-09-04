@@ -47,12 +47,18 @@ Este proyecto incluye un script para extraer categorías y subcategorías del Py
 ```python
 import scrappy
 
-# Guardar las categorías en un archivo CSV
+# Obtener un dataframe con las categorias:
 scrappy.get_categories()
 
 ```
 
-Si deseas guardar los datos en un archivo CSV, modifica la llamada a get_categories pasándole save=True.
+Si deseas guardar los datos en un archivo CSV, modifica la llamada a get_categories pasándole ***save=True***. Esto hará que se guarde la información en el directorio que se ejecute el script.
+De todas formas, puedes pasarle como parametro un ***path*** en formato *str*.
+Por ejemplo:
+
+```python
+scrappy.get_categories(save=True, path="MI_PATH")
+```
 
 ## Requisitos
 
