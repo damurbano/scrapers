@@ -1,10 +1,16 @@
+import time
+
+import pandas as pd
+from bs4 import BeautifulSoup
+from colorama import Fore, Style, init
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-import pandas as pd
-import time
+from selenium.webdriver.support.ui import WebDriverWait
+from tabulate import tabulate
+
+# Inicializa colorama
+init(autoreset=True)
 
 
 def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
@@ -16,7 +22,8 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
     :param languages: Lista de lenguajes de programación (e.g., ["Python", "C"]).
     :return: DataFrame con los módulos encontrados.
     """
-
+    # Lista para almacenar los módulos de todas las páginas
+    all_modules = []
     # Configurar el controlador de Selenium (usa la ruta de tu WebDriver)
     driver = (
         webdriver.Chrome()
@@ -33,9 +40,6 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
 
         # Navegar a la URL inicial
         driver.get(url)
-
-        # Lista para almacenar los módulos de todas las páginas
-        all_modules = []
 
         # Encontrar el número total de páginas
         soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -85,8 +89,8 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
                     next_button.click()
                     # Esperar un momento para que la siguiente página cargue
                     time.sleep(2)
-                except:
-                    print(f"Error al intentar ir a la página {page + 1}")
+                except Exception as e:
+                    print(f"Error al intentar ir a la página {page + 1}: {e}")
                     break
 
     finally:
@@ -95,17 +99,128 @@ def get_pypi_modules(module_name: str, languages: list) -> pd.DataFrame:
 
     # Crear un DataFrame de Pandas para organizar los datos
     df = pd.DataFrame(all_modules)
+    colored_df(df)
 
     return df
 
 
-# Ejemplo de uso
-module_name = "hola"
-languages = ["Python", "C"]
-df = get_pypi_modules(module_name, languages)
+def search(package_name: str) -> pd.DataFrame:
+    """
+    Función que utiliza Selenium para recopilar módulos en PyPI basados en el nombre del paquete.
 
-# Mostrar los primeros 5 módulos encontrados
-print(df.head())
+    :param package_name: Nombre del paquete a buscar (e.g., "pyqt5").
+    :return: DataFrame con los módulos encontrados.
+    """
+    # Lista para almacenar los módulos
+    all_modules = []
 
-# Guardar los datos en un archivo CSV
-df.to_csv(f"{module_name}.csv", index=False)
+    # Configurar el controlador de Selenium
+    driver = (
+        webdriver.Chrome()
+    )  # Asegúrate de tener el controlador de Chrome en PATH o especifica la ruta
+
+    try:
+        # Generar la URL de búsqueda
+        url = f"https://pypi.org/search/?q={package_name}&o="
+
+        # Navegar a la URL inicial
+        driver.get(url)
+
+        # Encontrar el número total de páginas
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        pagination_buttons = soup.select("a.button-group__button")
+
+        if pagination_buttons:
+            last_page_number = int(pagination_buttons[-2].text)
+        else:
+            last_page_number = (
+                1  # Si no hay paginación, significa que solo hay una página
+            )
+
+        # Iterar sobre todas las páginas disponibles
+        for page in range(1, last_page_number + 1):
+            # Esperar a que los elementos carguen
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "package-snippet"))
+            )
+
+            # Extraer el contenido de la página actual
+            soup = BeautifulSoup(driver.page_source, "html.parser")
+
+            # Extraer los módulos de la página actual
+            for package in soup.find_all("li"):
+                link = package.find("a", class_="package-snippet")
+                if link:
+                    name = link.find("span", class_="package-snippet__name").text
+                    version = link.find("span", class_="package-snippet__version").text
+                    created = link.find(
+                        "span", class_="package-snippet__created"
+                    ).text.strip()
+                    description = link.find(
+                        "p", class_="package-snippet__description"
+                    ).text.strip()
+                    url = f"https://pypi.org{link['href']}"
+
+                    all_modules.append(
+                        {
+                            "name": name,
+                            "version": version,
+                            "created": created,
+                            "description": description,
+                            "url": url,
+                        }
+                    )
+
+            # Ir a la siguiente página si no es la última
+            if page < last_page_number:
+                try:
+                    # Usando XPath para seleccionar el botón "Siguiente"
+                    next_button = driver.find_element(
+                        By.XPATH,
+                        "//a[contains(@class, 'button-group__button') and contains(@href, 'page=')]",
+                    )
+                    next_button.click()
+                    # Esperar un momento para que la siguiente página cargue
+                    time.sleep(2)
+                except Exception as e:
+                    print(f"Error al intentar ir a la página {page + 1}: {e}")
+                    break
+
+    finally:
+        # Asegurarse de que el navegador se cierra correctamente
+        driver.quit()
+
+    # Convertir la lista de diccionarios en un DataFrame
+    df = pd.DataFrame(all_modules)
+    colored_df(df)
+    return df
+
+
+def colored_df(df):
+    """Colorea un dataframe y lo printea usando tabulate"""
+    # Define colores para los encabezados y los datos
+    header_color = Fore.RED
+    data_color = Fore.GREEN
+
+    # Formatea los nombres de columna con color
+    colored_headers = [header_color + header + Style.RESET_ALL for header in df.columns]
+
+    # Formatea los datos con color
+    colored_data = [
+        [data_color + str(cell) + Style.RESET_ALL for cell in row]
+        for row in df.values.tolist()
+    ]
+
+    # Usa tabulate para imprimir la tabla con los colores aplicados
+    print(tabulate(colored_data, headers=colored_headers, tablefmt="pipe"))
+
+
+if __name__ == "__main__":
+    ###Ejemplo de uso
+    MODULETEST = "hola"
+    languages_list = ["Python", "C"]
+    data_frame = get_pypi_modules(MODULETEST, languages_list)
+    # # Guardar los datos en un archivo CSV
+    # data_frame.to_csv(f"{MODULETEST}.csv", index=False)
+
+    # print(search(MODULETEST))
