@@ -26,7 +26,7 @@ python scraper.py
 ```
     El script imprimirá en la consola los nombres y precios de los productos encontrados.
 
-##Ejemplo de salida
+## Ejemplo de salida
 
 ```bash
 
