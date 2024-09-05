@@ -79,7 +79,6 @@ scrapypi.get_categories(save=True, path="MI_PATH")
    ```
    git clone https://github.com/damurbano/scrapypi.git
    cd scrapypi
-
    ```
 2. **Instala las Dependencias** :
 
