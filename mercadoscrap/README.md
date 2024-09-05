@@ -17,7 +17,7 @@ Este script permite realizar scraping de productos y precios en MercadoLibre Arg
 ## Uso
 
     Clona o descarga el repositorio.
-    Asegúrate de tener instaladas las dependencias necesarias ejecutando el comando anterior.
+    Asegúrate de tener instaladas las dependencias necesarias. <!-- Agregar link a dependencias en el readme.md inicial -->
     Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
 
 ```bash
