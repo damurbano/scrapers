@@ -14,7 +14,6 @@ Este script permite realizar scraping de productos y precios en MercadoLibre Arg
     Formatea los precios utilizando comas para los decimales y puntos para los separadores de miles.
 
 
-```
 ## Uso
 
     Clona o descarga el repositorio.
