@@ -1,12 +1,13 @@
-# Scrappy
+# Scrapypi
 
 <p align="center">
-  <img src="./image/README/1725227622704.png" alt="Scrappy" />
+  <img src="./image/README/1725227622704.png" alt="Scrapypi" />
 </p>
 
-**Scrappy** es una herramienta de scraping en Python diseñada para extraer información de módulos de PyPI utilizando Selenium y BeautifulSoup. Esta herramienta permite recopilar datos detallados sobre los módulos de PyPI, incluidos su nombre, versión, fecha de creación y descripción, y categorizarlos para facilitar futuras búsquedas.
+**Scrapypi** es una herramienta de scraping en Python diseñada para extraer información de módulos de PyPI utilizando Selenium y BeautifulSoup. Esta herramienta permite recopilar datos detallados sobre los módulos de PyPI, incluidos su nombre, versión, fecha de creación y descripción, y categorizarlos para facilitar futuras búsquedas.
 
 ## Y qué es Pypi?
+
 El Índice de paquetes de Python (PyPI) es un repositorio de *software* para el lenguaje de programación Python. 🐍
 
 ## Funcionalidades Principales
@@ -38,17 +39,17 @@ print(df.head())
 df.to_csv(f"{module_name}.csv", index=False)
 ```
 
-### `scrappy.py` - Módulo para obtener y guardar Categorías en un CSV
+### `scrapypi.py` - Módulo para obtener y guardar Categorías en un CSV
 
 Este proyecto incluye un script para extraer categorías y subcategorías del Python Package Index (PyPI). Utiliza requests para realizar solicitudes HTTP y BeautifulSoup para analizar el contenido HTML. Los datos extraídos se organizan en un DataFrame de pandas y se pueden guardar en un archivo CSV para su posterior uso.
 
 #### Ejemplo de Uso
 
 ```python
-import scrappy
+import scrapypi
 
 # Obtener un dataframe con las categorias:
-scrappy.get_categories()
+scrapypi.get_categories()
 
 ```
 
@@ -57,7 +58,7 @@ De todas formas, puedes pasarle como parametro un ***path*** en formato *str*.
 Por ejemplo:
 
 ```python
-scrappy.get_categories(save=True, path="MI_PATH")
+scrapypi.get_categories(save=True, path="MI_PATH")
 ```
 
 ## Requisitos
@@ -76,8 +77,8 @@ scrappy.get_categories(save=True, path="MI_PATH")
 1. **Clona el Repositorio** :
 
    ```
-   git clone https://github.com/damurbano/scrappy.git
-   cd scrappy
+   git clone https://github.com/damurbano/scrapypi.git
+   cd scrapypi
 
    ```
 2. **Instala las Dependencias** :
@@ -91,4 +92,4 @@ scrappy.get_categories(save=True, path="MI_PATH")
 
 ## Contribuciones
 
-¡Las contribuciones son bienvenidas! Si tienes ideas para mejorar Scrappy o quieres reportar un error, abre un *issue* o envía un  *pull request* .
+¡Las contribuciones son bienvenidas! Si tienes ideas para mejorar Scrapypi o quieres reportar un error, abre un *issue* o envía un  *pull request* .

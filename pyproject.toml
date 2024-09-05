@@ -4,7 +4,7 @@ target-version = ['py39']
 skip-string-normalization = false
 
 [tool.poetry]
-name = "pypi_scraper"
+name = "scrapypi"
 version = "0.1.0"
 description = "A web scraping tool to extract and categorize modules from PyPI"
 authors = ["Tu Nombre <tu.email@example.com>"]
