@@ -1,94 +1,47 @@
-# mercadoscrap
-
 <p align="center">
-  <img src="./image/README/1725227622704.png" alt="Scrapypi" />
+  <img src="../image/README/mercadoscraper.png" alt="mercadoScrapper" width="400" height="300" />
 </p>
 
-**Scrapypi** es una herramienta de scraping en Python diseñada para extraer información de módulos de PyPI utilizando Selenium y BeautifulSoup. Esta herramienta permite recopilar datos detallados sobre los módulos de PyPI, incluidos su nombre, versión, fecha de creación y descripción, y categorizarlos para facilitar futuras búsquedas.
 
-## Y qué es Pypi?
+# MercadoLibre Scraper
 
-El Índice de paquetes de Python (PyPI) es un repositorio de *software* para el lenguaje de programación Python. 🐍
+Este script permite realizar scraping de productos y precios en MercadoLibre Argentina a partir de una búsqueda específica, recorriendo todas las páginas de resultados.
+## Características
 
-## Funcionalidades Principales
+    Extrae los nombres de los productos y sus precios de las páginas de búsqueda de MercadoLibre.
+    Excluye precios que están dentro de la sección "buy box".
+    Calcula el número total de páginas en función de los resultados encontrados.
+    Formatea los precios utilizando comas para los decimales y puntos para los separadores de miles.
 
-### `finder.py` - Módulo para Buscar Módulos en PyPI
-
-El módulo `finder.py` contiene la función `get_pypi_modules()`, que se encarga de:
-
-- **Buscar Módulos Específicos**: Realiza una búsqueda en PyPI para un módulo específico, como `django`.
-- **Filtrar por Lenguajes**: Permite filtrar los resultados por lenguajes de programación, como `Python` y `C`.
-- **Navegar por Múltiples Páginas**: Utiliza Selenium para navegar por todas las páginas de resultados disponibles en PyPI, asegurando que se recopilen todos los módulos correspondientes a la búsqueda.
-- **Recopilar Información Detallada**: Extrae datos clave de cada módulo, como el nombre, versión, fecha de creación y descripción.
-- **Devolver los Resultados en un DataFrame**: Organiza los datos recopilados en un `pandas.DataFrame` para facilitar su manipulación y análisis.
-
-#### Ejemplo de Uso
-
-```python
-from finder import get_pypi_modules
-
-module_name = "hola"
-languages = ["Python", "C"]
-
-df = get_pypi_modules(module_name, languages)
-
-# Mostrar los primeros 5 módulos encontrados
-print(df.head())
-
-# Guardar los datos en un archivo CSV
-df.to_csv(f"{module_name}.csv", index=False)
-```
-
-### `scrapypi.py` - Módulo para obtener y guardar Categorías en un CSV
-
-Este proyecto incluye un script para extraer categorías y subcategorías del Python Package Index (PyPI). Utiliza requests para realizar solicitudes HTTP y BeautifulSoup para analizar el contenido HTML. Los datos extraídos se organizan en un DataFrame de pandas y se pueden guardar en un archivo CSV para su posterior uso.
-
-#### Ejemplo de Uso
-
-```python
-import scrapypi
-
-# Obtener un dataframe con las categorias:
-scrapypi.get_categories()
 
 ```
+## Uso
 
-Si deseas guardar los datos en un archivo CSV, modifica la llamada a get_categories pasándole ***save=True***. Esto hará que se guarde la información en el directorio que se ejecute el script.
-De todas formas, puedes pasarle como parametro un ***path*** en formato *str*.
-Por ejemplo:
+    Clona o descarga el repositorio.
+    Asegúrate de tener instaladas las dependencias necesarias ejecutando el comando anterior.
+    Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
 
-```python
-scrapypi.get_categories(save=True, path="MI_PATH")
+```bash
+
+python scraper.py
 ```
+    El script imprimirá en la consola los nombres y precios de los productos encontrados.
 
-## Requisitos
+##Ejemplo de salida
 
-* Python 3.x
-* Selenium
-* BeautifulSoup
-* Pandas
-* Requests
-* Colorama
-* Tabulate
-* WebDriver compatible (como ChromeDriver)
+```bash
 
-## Instalación
+Introduce el artículo a buscar: iPhone
+Scraping página 1: https://listado.mercadolibre.com.ar/iPhone#D[A:iPhone]
+Total de resultados: 2350
+Scraping página 2: https://listado.mercadolibre.com.ar/iPhone_Desde_51_NoIndex_True
+...
+Producto: iPhone 13 Pro, Precio: $150.000
+Producto: iPhone 12 Mini, Precio: $120.000
+...
+```
+## Notas
 
-1. **Clona el Repositorio** :
-
-   ```
-   git clone https://github.com/damurbano/scrapypi.git
-   cd scrapypi
-   ```
-2. **Instala las Dependencias** :
-
-   ```
-   poetry install
-   ```
-3. **Configura WebDriver** :
-
-* Descarga e instala el WebDriver correspondiente a tu navegador (como ChromeDriver).
-
-## Contribuciones
-
-¡Las contribuciones son bienvenidas! Si tienes ideas para mejorar Scrapypi o quieres reportar un error, abre un *issue* o envía un  *pull request* .
+    MercadoLibre muestra hasta 50 productos por página. Este script ajusta dinámicamente las páginas en función de los resultados totales.
+    Los precios se muestran formateados con comas para los decimales y puntos como separadores de miles.
+    En caso de que la página de MercadoLibre cambie su estructura HTML, es posible que el script necesite ajustes en las expresiones regulares.
