@@ -40,6 +40,7 @@ def get_categories(save=False, path: str = ".") -> pd.DataFrame:
 
         if save:
             # Guardar los datos en un archivo CSV
+            print("Guardando en:")
             print(path + "/pypi_categories.csv")
             category_df.to_csv(path + "/pypi_categories.csv", index=False)
 
