@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 from tabulate import tabulate
 
 # Inicializa colorama para manejar colores en la salida de la consola
@@ -25,9 +26,19 @@ def get_pypi_modules(
     :return: DataFrame con los módulos encontrados.
     """
     all_modules = []  # Lista para almacenar los módulos de todas las páginas
-
+    chrome_options = Options()
+    # chrome_options.add_argument("--headless")  # Ejecutar en modo headless (sin interfaz gráfica)
+    chrome_options.add_argument(
+        "--no-sandbox"
+    )  # Necesario para algunos entornos de Linux
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Mejora el uso de memoria compartida
+    chrome_options.add_argument(
+        "--disable-gpu"
+    )  # Acelera el inicio en algunos sistemas
     # Inicia el controlador Chrome
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         # 🛠️ Construye la URL
@@ -117,9 +128,20 @@ def search(package_name: str) -> pd.DataFrame:
     :return: DataFrame con los módulos encontrados.
     """
     all_modules = []  #  Lista para almacenar los módulos
-
+    chrome_options = Options()
+    # chrome_options.add_argument("--headless")  # Ejecutar en modo headless (sin interfaz gráfica)
+    chrome_options.add_argument(
+        "--no-sandbox"
+    )  # Necesario para algunos entornos de Linux
+    chrome_options.add_argument(
+        "--disable-dev-shm-usage"
+    )  # Mejora el uso de memoria compartida
+    chrome_options.add_argument(
+        "--disable-gpu"
+    )  # Acelera el inicio en algunos sistemas
     # Inicia el controlador Chrome
-    driver = webdriver.Chrome()
+    # Inicia el controlador Chrome
+    driver = webdriver.Chrome(options=chrome_options)
 
     try:
         # 🛠️ Genera la URL:
