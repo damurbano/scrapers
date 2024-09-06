@@ -4,10 +4,11 @@ target-version = ['py39']
 skip-string-normalization = false
 
 [tool.poetry]
-name = "scrapypi"
+name = "scrapers"
 version = "0.1.0"
-description = "A web scraping tool to extract and categorize modules from PyPI"
+description = "Scraping tools"
 authors = ["Tu Nombre <tu.email@example.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.9"

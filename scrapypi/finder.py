@@ -1,5 +1,4 @@
 import time
-
 import pandas as pd
 from bs4 import BeautifulSoup
 from colorama import Fore, Style, init
@@ -9,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from tabulate import tabulate
 
-# Inicializa colorama
+# Inicializa colorama para manejar colores en la salida de la consola
 init(autoreset=True)
 
 
@@ -17,47 +16,46 @@ def get_pypi_modules(
     module_name: str, languages: list, save: bool = False, path: str = "."
 ) -> pd.DataFrame:
     """
-    Función que utiliza Selenium para recopilar módulos de todas las páginas en PyPI,
-    asegurándose de cerrar el navegador al terminar.
+    Utiliza Selenium para obtener módulos de PyPI en todas las páginas de resultados.
 
-    :param module_name: Nombre del módulo a buscar (e.g., "django").
-    :param languages: Lista de lenguajes de programación (e.g., ["Python", "C"]).
+    :param module_name: Nombre del módulo a buscar (por ejemplo, "django").
+    :param languages: Lista de lenguajes de programación (por ejemplo, ["Python", "C"]).
+    :param save: Booleano para indicar si se desea guardar el resultado en un archivo.
+    :param path: Ruta donde se guardará el archivo CSV si 'save' es True.
     :return: DataFrame con los módulos encontrados.
     """
-    # Lista para almacenar los módulos de todas las páginas
-    all_modules = []
-    # Configurar el controlador de Selenium (usa la ruta de tu WebDriver)
-    driver = (
-        webdriver.Chrome()
-    )  # Asegúrate de tener el controlador de Chrome en PATH o especifica la ruta
+    all_modules = []  # Lista para almacenar los módulos de todas las páginas
+
+    # Inicia el controlador Chrome
+    driver = webdriver.Chrome()
 
     try:
-        # Construir la parte de la URL para los lenguajes
+        # 🛠️ Construye la URL
         language_params = "+".join(
             [f"Programming+Language+%3A%3A+{lang}" for lang in languages]
         )
-
-        # Generar la URL de búsqueda
         url = f"https://pypi.org/search/?q={module_name}&o=&c={language_params}"
 
-        # Navegar a la URL inicial
+        # Abre la URL en el navegador
         driver.get(url)
 
-        # Encontrar el número total de páginas
+        # Usa BeautifulSoup para analizar el HTML de la página
         soup = BeautifulSoup(driver.page_source, "html.parser")
-        last_page_number = int(soup.select("a.button-group__button")[-2].text)
+        last_page_number = int(
+            soup.select("a.button-group__button")[-2].text
+        )  # Número total de páginas
 
-        # Iterar sobre todas las páginas disponibles
+        # Recorre todas las páginas de resultados
         for page in range(1, last_page_number + 1):
-            # Esperar a que los elementos carguen
+            # ⏳ Espera a que los elementos de la página se carguen
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "package-snippet"))
             )
 
-            # Extraer el contenido de la página actual
+            # Extrae el HTML de la página
             soup = BeautifulSoup(driver.page_source, "html.parser")
 
-            # Extraer los módulos de la página actual
+            # Extrae información de cada módulo en la página actual
             for package in soup.find_all("li"):
                 link = package.find("a", class_="package-snippet")
                 if link:
@@ -81,7 +79,7 @@ def get_pypi_modules(
                         }
                     )
 
-            # Ir a la siguiente página si no es la última
+            # Pasa a la siguiente página, si existe
             if page < last_page_number:
                 try:
                     next_button = driver.find_element(
@@ -89,75 +87,67 @@ def get_pypi_modules(
                         "//a[contains(@class, 'button-group__button') and contains(@href, 'page=')]",
                     )
                     next_button.click()
-                    # Esperar un momento para que la siguiente página cargue
-                    time.sleep(2)
+                    time.sleep(2)  #  Pausa para permitir que la nueva página cargue
                 except Exception as e:
                     print(f"Error al intentar ir a la página {page + 1}: {e}")
                     break
 
     finally:
-        # Asegurarse de que el navegador se cierra correctamente
+        # Cierra el navegador al terminar
         driver.quit()
 
-    # Crear un DataFrame de Pandas para organizar los datos
+    # 📊 DataFrame
     df = pd.DataFrame(all_modules)
+
     if save:
-        # Guardar los datos en un archivo CSV
-        print(path + "/" + "".join(languages) + f"_{module_name}.csv")
-        df.to_csv(path + "/" + "".join(languages) + f"_{module_name}.csv", index=False)
+        # 💾 Guarda el DataFrame
+        df.to_csv(f"{path}/{module_name}.csv", index=False)
+
+    # 🎨 DataFrame coloreado
     colored_df(df)
 
     return df
 
 
-# TODO: Del módulo superior crear una modificación que permita usar los valores de get_categories. get_pypi_modules(category, languages -> item?: list, module_name: str)..
-# TODO: Crear un modulo que guarde en un json las categorias con sus items, para luego utilizarlo en get_pypi_modules, para constatar los argumentos pasados. Debería incluir una funcion que chequee la estructura de la pagina y si los itemes o las categorias son distintas lanzar un warning y un aviso de que se estan actualizando los parametros
-
-
 def search(package_name: str) -> pd.DataFrame:
     """
-    Función que utiliza Selenium para recopilar módulos en PyPI basados en el nombre del paquete.
+    Función para buscar módulos en PyPI según el nombre del paquete.
 
-    :param package_name: Nombre del paquete a buscar (e.g., "pyqt5").
+    :param package_name: Nombre del paquete a buscar (por ejemplo, "pyqt5").
     :return: DataFrame con los módulos encontrados.
     """
-    # Lista para almacenar los módulos
-    all_modules = []
+    all_modules = []  #  Lista para almacenar los módulos
 
-    # Configurar el controlador de Selenium
-    driver = (
-        webdriver.Chrome()
-    )  # Asegúrate de tener el controlador de Chrome en PATH o especifica la ruta
+    # Inicia el controlador Chrome
+    driver = webdriver.Chrome()
 
     try:
-        # Generar la URL de búsqueda
+        # 🛠️ Genera la URL:
         url = f"https://pypi.org/search/?q={package_name}&o="
 
-        # Navegar a la URL inicial
+        # Abre la URL en el navegador
         driver.get(url)
 
-        # Encontrar el número total de páginas
+        # BeautifulSoup para analizar el HTML de la página
         soup = BeautifulSoup(driver.page_source, "html.parser")
         pagination_buttons = soup.select("a.button-group__button")
 
         if pagination_buttons:
             last_page_number = int(pagination_buttons[-2].text)
         else:
-            last_page_number = (
-                1  # Si no hay paginación, significa que solo hay una página
-            )
+            last_page_number = 1  # Si no hay paginación, solo hay una página
 
-        # Iterar sobre todas las páginas disponibles
+        # Recorre todas las páginas de resultados
         for page in range(1, last_page_number + 1):
-            # Esperar a que los elementos carguen
+            # ⏳ Espera a que los elementos de la página se carguen
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "package-snippet"))
             )
 
-            # Extraer el contenido de la página actual
+            # Extrae el HTML de la página
             soup = BeautifulSoup(driver.page_source, "html.parser")
 
-            # Extraer los módulos de la página actual
+            # Extrae información de cada módulo en la página actual
             for package in soup.find_all("li"):
                 link = package.find("a", class_="package-snippet")
                 if link:
@@ -181,27 +171,26 @@ def search(package_name: str) -> pd.DataFrame:
                         }
                     )
 
-            # Ir a la siguiente página si no es la última
+            # Pasa a la siguiente página, si existe
             if page < last_page_number:
                 try:
-                    # Usando XPath para seleccionar el botón "Siguiente"
                     next_button = driver.find_element(
                         By.XPATH,
                         "//a[contains(@class, 'button-group__button') and contains(@href, 'page=')]",
                     )
                     next_button.click()
-                    # Esperar un momento para que la siguiente página cargue
-                    time.sleep(2)
+                    time.sleep(2)  # Pausa para permitir que la nueva página cargue
                 except Exception as e:
                     print(f"Error al intentar ir a la página {page + 1}: {e}")
                     break
 
     finally:
-        # Asegurarse de que el navegador se cierra correctamente
+        # Cierra el navegador al terminar
         driver.quit()
 
-    # Convertir la lista de diccionarios en un DataFrame
+    # 📊 DataFrame
     df = pd.DataFrame(all_modules)
+    # 🎨 DataFrame coloreado
     colored_df(df)
     return df
 
@@ -225,12 +214,11 @@ def colored_df(df):
     print(tabulate(colored_data, headers=colored_headers, tablefmt="pipe"))
 
 
+# TODO: Del módulo superior crear una modificación que permita usar los valores de get_categories. get_pypi_modules(category, languages -> item?: list, module_name: str)..
+# TODO: Crear un modulo que guarde en un json las categorias con sus items, para luego utilizarlo en get_pypi_modules, para constatar los argumentos pasados. Debería incluir una funcion que chequee la estructura de la pagina y si los itemes o las categorias son distintas lanzar un warning y un aviso de que se estan actualizando los parametros
+
 if __name__ == "__main__":
-    ###Ejemplo de uso
+    ### Ejemplo de uso
     MODULETEST = "hola"
     languages_list = ["Python", "C"]
     data_frame = get_pypi_modules(MODULETEST, languages_list, save=True)
-    # # Guardar los datos en un archivo CSV
-    # data_frame.to_csv(f"{MODULETEST}.csv", index=False)
-
-    # print(search(MODULETEST))
