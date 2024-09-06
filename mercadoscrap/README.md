@@ -24,7 +24,7 @@ Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
 
 ```bash
 
-python scraper.py
+python mercadolibre.py
 ```
 
 El script imprimirá en la consola los nombres y precios de los productos encontrados.
