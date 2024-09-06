@@ -62,7 +62,7 @@ def extract_products_and_prices(html: str):
 
 def scrape_all_pages(query: str):
     """Recorre todas las páginas de resultados, buscando productos y precios"""
-    # Reemplazamos espacios con guiones bajos porque la web no entiende espacios)
+    # Reemplaza espacios con guiones medios porque la web no entiende espacios)
     search_query = query.replace(" ", "-")
     url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
     try:
