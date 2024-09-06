@@ -9,7 +9,7 @@ URL_BASE = "https://listado.mercadolibre.com.ar/"
 PRODUCTS_PER_PAGE = 50
 
 
-def get_total_results(html):
+def get_total_results(html: str):
     """Saca el número total de resultados de la búsqueda usando expresiones regulares"""
     # Cantidad de resultados dentro del HTML. Básicamente, estamos buscando cuántos productos hay.
     pattern = re.compile(
@@ -25,13 +25,12 @@ def get_total_results(html):
         # El número a entero
         total_results = int(total_results_str.replace(".", "").replace(",", ""))
         return total_results
-    # Si no encontramos el número de resultados, avisamos que algo raro pasó
     print("No se encontró el número total de resultados en el HTML.")
     return 0
 
 
-def extract_products_and_prices(html):
-    """Extraemos los nombres de los productos y sus precios"""
+def extract_products_and_prices(html: str):
+    """Extrae los nombres de los productos y sus precios"""
     # Los nombres de los productos
     product_pattern = re.compile(
         r'<h2 class="poly-box poly-component__title"><a[^>]*>(.*?)</a></h2>', re.DOTALL
@@ -61,12 +60,11 @@ def extract_products_and_prices(html):
     return products, filtered_prices
 
 
-def scrape_all_pages(query):
-    """Recorremos todas las páginas de resultados, buscando productos y precios"""
+def scrape_all_pages(query: str):
+    """Recorre todas las páginas de resultados, buscando productos y precios"""
     # Reemplazamos espacios con guiones bajos porque la web no entiende espacios)
     search_query = query.replace(" ", "-")
-    url = f"{URL_BASE}{search_query}#D[A:{search_query}]"  # Aquí está la URL mágica que nos lleva a los productos
-
+    url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
     try:
         # 🚀 Primera solicitud: búsqueda a la URL
         response = requests.get(url, timeout=300)
@@ -80,7 +78,7 @@ def scrape_all_pages(query):
 
         print(f"Total de resultados: {total_results}")
 
-        # 🧮 Calculamos cuántas páginas necesitamos ver basándonos en el total de productos y los productos por página
+        # 🧮 Se calcula cuántas páginas necesitamos ver basándonos en el total de productos y los productos por página
 
         # La función math.ceil() se utiliza para redondear un número decimal al entero más cercano por arriba. Es decir, si tenés un número con decimales y querés asegurarte de que siempre sea "redondeado hacia arriba", aunque la parte decimal sea pequeña, math.ceil() es la función ideal.
 
@@ -112,12 +110,10 @@ def scrape_all_pages(query):
 
             # Extraemos los productos y precios:
             products, prices = extract_products_and_prices(html)
-            all_products.extend(
-                products
-            )  # Agregamos los productos a nuestra lista de productos
+            all_products.extend(products)  # Productos a lista de productos
             all_prices.extend(prices)  # Lo mismo con los precios
 
-        print(len(all_products), "PRODUCTOS ENCONTRADOS")
+        print(len(all_products), "PRODUCTOS ENCONTRADOS \n")
         print(len(set(all_products)), "PRODUCTOS ÚNICOS")
 
         for product, price in zip(all_products, all_prices):
@@ -128,6 +124,6 @@ def scrape_all_pages(query):
         print("Error de conexión", error)
 
 
-# Solicitar al usuario el artículo a buscar
+# A probar!!
 search = input("Introduce el artículo a buscar: ")
 scrape_all_pages(search)
