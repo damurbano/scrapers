@@ -11,23 +11,23 @@ Sin mucha sofisticacion... no hay selenium, ni BeautifulSoup, ni pandas, ni WebD
 
 ## Características
 
-    Extrae los nombres de los productos y sus precios de las páginas de búsqueda de MercadoLibre.
-    Excluye precios que están dentro de la sección "buy box".
-    Calcula el número total de páginas en función de los resultados encontrados.
-    Formatea los precios utilizando comas para los decimales y puntos para los separadores de miles.
+Extrae los nombres de los productos y sus precios de las páginas de búsqueda de MercadoLibre.
+Excluye precios que están dentro de la sección "buy box".
+Calcula el número total de páginas en función de los resultados encontrados.
+Formatea los precios utilizando comas para los decimales y puntos para los separadores de miles.
 
 ## Uso
 
-    Clona o descarga el repositorio.
-    Asegúrate de tener instaladas las dependencias necesarias.`<!-- Agregar link a dependencias en el readme.md inicial -->`
-    Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
+Clona o descarga el repositorio.
+Asegúrate de tener instaladas las dependencias necesarias.
+Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
 
 ```bash
 
 python scraper.py
 ```
 
-    El script imprimirá en la consola los nombres y precios de los productos encontrados.
+El script imprimirá en la consola los nombres y precios de los productos encontrados.
 
 ## Ejemplo de salida
 
@@ -45,6 +45,6 @@ Producto: iPhone 12 Mini, Precio: $120.000
 
 ## Notas
 
-    MercadoLibre muestra hasta 50 productos por página. Este script ajusta dinámicamente las páginas en función de los resultados totales.
-    Los precios se muestran formateados con comas para los decimales y puntos como separadores de miles.
-    En caso de que la página de MercadoLibre cambie su estructura HTML, es posible que el script necesite ajustes en las expresiones regulares.
+MercadoLibre muestra hasta 50 productos por página. Este script ajusta dinámicamente las páginas en función de los resultados totales.
+Los precios se muestran formateados con comas para los decimales y puntos como separadores de miles.
+En caso de que la página de MercadoLibre cambie su estructura HTML, es posible que el script necesite ajustes en las expresiones regulares.
