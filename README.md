@@ -3,8 +3,10 @@
 
 Aqui hay dos proyectos distintos, pero los dos son scrapers. Uno scrapea productos y precios en Mercado Libre; el otro en Pypi donde lista y muestra modulos disponibles.
 Te invito a que veas los proyectos 🤓:
-*[Mercadoscraper](https://github.com/damurbano/scrapers/tree/main/mercadoscrap)*
-*[Scrapipy](https://github.com/damurbano/scrapers/tree/main/scrapypi)*
+
+
+* [Mercadoscraper](https://github.com/damurbano/scrapers/tree/main/mercadoscrap): Scrapea productos y precios en Mercado Libre.
+* [Scrapipy](https://github.com/damurbano/scrapers/tree/main/scrapypi): Lista y muestra módulos disponibles en PyPI.
 
 ## Requisitos
 
