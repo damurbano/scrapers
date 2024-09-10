@@ -29,6 +29,8 @@ python mercadolibre.py
 
 El script imprimirá en la consola los nombres y precios de los productos encontrados.
 
+```# TODO: Integrar un análisis de los datos, incluyendo métricas, kpis, indicadores``` 
+
 ## Ejemplo de salida
 
 ```bash
