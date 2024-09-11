@@ -54,7 +54,7 @@ def get_categories(html: str):
     # Buscar el <h3> con el texto "Categorías"
     h3 = soup.find("h3", {"aria-level": "3", "class": "ui-search-filter-dt-title"})
     print(h3)
-    if h3 and h3.get_text(strip=True) == "Categorías":
+    if h3 and h3.get_text(strip=True):
         # Encontrar el contenedor padre <div class="ui-search-filter-dl">
         div = h3.find_parent("div", {"class": "ui-search-filter-dl"})
         if div:
