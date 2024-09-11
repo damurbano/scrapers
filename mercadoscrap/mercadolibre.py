@@ -51,25 +51,29 @@ def get_categories(html: str):
     """Extrae las categorías y sus cantidades de resultados"""
     soup = BeautifulSoup(html, "html.parser")
 
-    # Buscar el <h3> con el texto "Categorías"
+    # Buscar el <h3> que le da el nombre a la categoria"
     h3 = soup.find("h3", {"aria-level": "3", "class": "ui-search-filter-dt-title"})
-    print(h3)
+    nombre_categoria = h3.get_text(strip=True)
+    # print(nombre_categoria)
+
     if h3 and h3.get_text(strip=True):
         # Encontrar el contenedor padre <div class="ui-search-filter-dl">
         div = h3.find_parent("div", {"class": "ui-search-filter-dl"})
         if div:
             # Extraer las categorías del <ul>
             ul = div.find("ul")
-            categories = {}
+            categories = {nombre_categoria: {}}
             for li in ul.find_all("li", {"class": "ui-search-filter-container"}):
                 a = li.find("a", {"class": "ui-search-link"})
                 if a:
-                    title = a.get("title")
+                    title = a.find("span", {"class": "ui-search-filter-name"}).get_text(
+                        strip=True
+                    )
                     qty_text = a.find(
                         "span", {"class": "ui-search-filter-results-qty"}
                     ).get_text(strip=True)
                     qty = int(qty_text.strip("()"))
-                    categories[title] = qty
+                    categories[nombre_categoria].update({title: qty})
             print(categories)
     else:
         print("No se encontró el encabezado 'Categorías'.")
