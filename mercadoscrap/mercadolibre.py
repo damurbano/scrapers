@@ -72,17 +72,24 @@ def get_categories(html: str):
                     qty_text = a.find(
                         "span", {"class": "ui-search-filter-results-qty"}
                     ).get_text(strip=True)
+                    link = a.get("href")
+                    print("Printeando link"+"**"*3)
+                    print(link)
                     qty = int(qty_text.strip("()"))
-                    categories[nombre_categoria].update({title: qty})
-            print(categories)
+                    categories[nombre_categoria].update({title:{"titulo":qty,"link":link}})
+            #print(categories)
+            return categories
     else:
         print("No se encontró el encabezado 'Categorías'.")
 
 
-def scrape_all_pages(query: str):
+def scrape_all_pages(query_search: str = "", categories_search:str=""):
     """Recorre todas las páginas de resultados, buscando productos, precios y categorías"""
-    search_query = query.replace(" ", "-")
-    url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
+    if query_search:
+        search_query = query_search.replace(" ", "-")
+        url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
+    else:
+        url = categories_search
     try:
         response = requests.get(url, timeout=300)
         _html = response.text
@@ -125,12 +132,9 @@ def scrape_all_pages(query: str):
             print(f"Producto: {product.strip()}, Precio: ${formatted_price}")
 
         # Obtener las categorías
-        # print(_html)
         categories = get_categories(_html)
-        # if categories:
-        #     print("\nCategorías encontradas:")
-        #     for category, qty in categories:
-        #         print(f"Categoría: {category}, Resultados: {qty}")
+        if categories:
+            return categories
 
     except requests.exceptions.ConnectTimeout as error:
         print("Error de conexión", error)
@@ -138,4 +142,23 @@ def scrape_all_pages(query: str):
 
 # A probar!!
 search = input("Introduce el artículo a buscar: ")
-scrape_all_pages(search)
+categorias = scrape_all_pages(query_search=search)
+print("Categorias devueltas!!"*3)
+if categorias:
+    for categoryName, categoriePriceLink in categorias.items():
+        
+        print("Nombre de la categoria:")
+        print(categoryName)
+        
+        for k, v in categoriePriceLink.items():
+            print("**"*10)
+            print(k)
+            print("**"*10)
+        link = categoriePriceLink.get("link")
+        if link:
+                scrape_all_pages(categories_search=link)
+
+        
+print(categorias)
+
+
