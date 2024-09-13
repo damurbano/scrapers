@@ -258,7 +258,7 @@ def limpiar_precio(precio_str):
 if __name__ == '__main__':
     #dfs =  convert_to_dataframes()
 
-
+    import os
     from datetime import datetime
     from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
     from sqlalchemy.orm import relationship
@@ -333,3 +333,10 @@ if __name__ == '__main__':
             print(df)
 
     mostrar_productos_por_categoria()
+    db_path ="mi_base_de_datos.db"
+
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print(f"Base de datos '{db_path}' eliminada exitosamente.")
+    else:
+        print(f"El archivo '{db_path}' no existe.")
