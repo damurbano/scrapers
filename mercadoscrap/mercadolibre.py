@@ -177,55 +177,54 @@ def scrape_all_pages(categories_search:str=""):
     except requests.exceptions.ConnectTimeout as error:
         print("Error de conexión", error)
 
+def main(input_=""):
+    if input_:
+        search = input_
+    else:
+        search = input("Introduce el artículo a buscar: ")
 
-# A probar!!
-search = input("Introduce el artículo a buscar: ")
+    search_query = search.replace(" ", "-")
+    url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
 
-search_query = search.replace(" ", "-")
-url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
-
-try:
-    response = requests.get(url, timeout=300)
-    _html = response.text
-    
-except:
-    print("Error de conexión")
-cat = get_categories(_html)
-print(cat) 
-
-# categorias:dict = scrape_all_pages(query_search=search)
-# print("Categorias devueltas!!"*3)
-if cat:
-    asd = {}
-    # new_categorias = categorias.copy()
-    for categoryName, categoriePriceLink in cat.items():
+    try:
+        response = requests.get(url, timeout=300)
+        _html = response.text
         
-        print("Nombre de la categoria:")
-        print(categoryName)
-        
-        for k, v in categoriePriceLink.items():
-            print("**"*10)
-            print(f"{k} CANTIDAD: {v.get("cantidad")}")
-            print("**"*10)
-            link = v.get("link")
+    except:
+        print("Error de conexión")
 
-            if link:
-                asd[k]=scrape_all_pages(categories_search=link)
+    cat = get_categories(_html)
 
 
-# print(asd)
-# for categoria, prod in asd.items():
-#     print(f"{categoria}:  {len(prod)}")
+    # print("Categorias devueltas!!"*3)
+    if cat:
+        finalDict = {}
+        for categoryName, categoriePriceLink in cat.items():            
+            print("Nombre de la categoria:")
+            print(categoryName)            
+            for k, v in categoriePriceLink.items():
+                print("**"*10)
+                print(f"{k} CANTIDAD: {v.get("cantidad")}")
+                print("**"*10)
+                link = v.get("link")
+                if link:
+                    finalDict[k]=scrape_all_pages(categories_search=link)
+            print(finalDict)
+        # for categoria, prod in asd.items():
+        #     print(f"{categoria}:  {len(prod)}")
 
-# Iniciamos el ciclo por categoría
-for categoria, productos in asd.items():
-    # Reseteamos el contador de productos por cada categoría
-    total_productos = 0
-    print(f"\nCategoría: {categoria}")
-    
-    # Recorremos los productos dentro de la categoría
-    for nombre_producto, detalles in productos.items():
-        cantidad_precios = len(detalles['Precio'])  # Contamos la cantidad de precios
-        total_productos += cantidad_precios  # Sumamos al total de productos
-        
-    print(f"Total de productos en '{categoria}': {total_productos}")
+        # Iniciamos el ciclo por categoría
+        for categoria, productos in finalDict.items():
+            # Reseteamos el contador de productos por cada categoría
+            total_productos = 0
+            print(f"\nCategoría: {categoria}")
+            
+            # Recorremos los productos dentro de la categoría
+            for nombre_producto, detalles in productos.items():
+                cantidad_precios = len(detalles['Precio'])  # Contamos la cantidad de precios
+                total_productos += cantidad_precios  # Sumamos al total de productos
+                
+            print(f"Total de productos en '{categoria}': {total_productos}")
+        return finalDict
+if __name__ == '__main__':
+    main()
