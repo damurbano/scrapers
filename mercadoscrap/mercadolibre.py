@@ -2,6 +2,7 @@ import requests  # 🕸️ Solicitudes HTTP
 import re  # 🧙‍♂️ Expresiones regulares, la varita mágica para buscar patrones en el HTML
 import math  # 🧮 Matemáticas para calcular cuántas páginas hay en total
 from bs4 import BeautifulSoup
+import pandas as pd
 
 # URL base de Mercado Libre.
 URL_BASE = "https://listado.mercadolibre.com.ar/"
@@ -226,5 +227,30 @@ def main(input_=""):
                 
             print(f"Total de productos en '{categoria}': {total_productos}")
         return finalDict
+    
+def convert_to_dataframes(data):
+    dfs = {}
+    for category, products in data.items():
+        # Crear un DataFrame para cada categoría
+        category_data = []
+        for product, details in products.items():
+            for price in details['Precio']:
+                category_data.append({'Producto': product, 'Precio': price})
+        
+        df = pd.DataFrame(category_data)
+        dfs[category] = df
+    
+    return dfs
+
+# # Convertir el diccionario a DataFrames
+# dataframes = convert_to_dataframes(data)
+
+
 if __name__ == '__main__':
-    main()
+    dfs =  convert_to_dataframes(main())
+
+    # Mostrar DataFrames para cada categoría
+    for category, df in dfs.items():
+        print(f"Categoría: {category}")
+        print(df)
+        print("\n")
