@@ -48,6 +48,7 @@ def extract_products_and_prices(html: str):
 
 
 def get_categories(html: str):
+    
     """Extrae las categorías y sus cantidades de resultados"""
     soup = BeautifulSoup(html, "html.parser")
 
@@ -73,10 +74,10 @@ def get_categories(html: str):
                         "span", {"class": "ui-search-filter-results-qty"}
                     ).get_text(strip=True)
                     link = a.get("href")
-                    print("Printeando link"+"**"*3)
-                    print(link)
+                    # print("Printeando link"+"**"*3)
+                    # print(link)
                     qty = int(qty_text.strip("()"))
-                    categories[nombre_categoria].update({title:{"titulo":qty,"link":link}})
+                    categories[nombre_categoria].update({title:{"cantidad":qty,"link":link}})
             #print(categories)
             return categories
     else:
@@ -85,11 +86,12 @@ def get_categories(html: str):
 
 def scrape_all_pages(query_search: str = "", categories_search:str=""):
     """Recorre todas las páginas de resultados, buscando productos, precios y categorías"""
-    if query_search:
-        search_query = query_search.replace(" ", "-")
-        url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
-    else:
-        url = categories_search
+    # if query_search:
+    #     search_query = query_search.replace(" ", "-")
+    #     url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
+        
+    # else:
+    url = categories_search
     try:
         response = requests.get(url, timeout=300)
         _html = response.text
@@ -99,20 +101,23 @@ def scrape_all_pages(query_search: str = "", categories_search:str=""):
         if total_results == 0:
             print("No se encontraron resultados.")
             return
-
+        
         print(f"Total de resultados: {total_results}")
 
         # Calcular cuántas páginas debemos recorrer
         total_pages = math.ceil(total_results / PRODUCTS_PER_PAGE)
         all_products = []
         all_prices = []
-
+        cleaned_url = ""
         for page in range(1, total_pages + 1):
             if page == 1:
                 page_url = url
             else:
+                if not cleaned_url:
+                    cleaned_url = url.split("NoIndex_True")[0]
                 offset = (page - 1) * PRODUCTS_PER_PAGE + 1
-                page_url = f"https://listado.mercadolibre.com.ar/{search_query}_Desde_{offset}_NoIndex_True"
+                page_url = f"{cleaned_url}Desde_{offset}_NoIndex_True"
+            
 
             print(f"Scraping página {page}: {page_url}")
 
@@ -124,17 +129,26 @@ def scrape_all_pages(query_search: str = "", categories_search:str=""):
             all_products.extend(products)
             all_prices.extend(prices)
 
-        print(len(all_products), "PRODUCTOS ENCONTRADOS \n")
-        print(len(set(all_products)), "PRODUCTOS ÚNICOS")
+            print(len(products), "PRODUCTOS ENCONTRADOS \n")
+            print(len(set(products)), "PRODUCTOS ÚNICOS")
 
+            for product, price in zip(products, prices):
+                formatted_price = price.replace(".", ",")
+                print(f"Producto: {product.strip()}, Precio: ${formatted_price}")
+        # if categories_search:
+        producto_precios = {}
         for product, price in zip(all_products, all_prices):
             formatted_price = price.replace(".", ",")
-            print(f"Producto: {product.strip()}, Precio: ${formatted_price}")
+            product_name = product.strip()
 
-        # Obtener las categorías
-        categories = get_categories(_html)
-        if categories:
-            return categories
+            # Si el producto ya está en el diccionario, agregar el precio a la lista
+            if product_name in producto_precios:
+                producto_precios[product_name]["Precio"].append(f"${formatted_price}")
+            else:
+                # Si no está, agregar el producto con el precio inicial
+                producto_precios[product_name] = {"Precio": [f"${formatted_price}"]}
+        return producto_precios
+        
 
     except requests.exceptions.ConnectTimeout as error:
         print("Error de conexión", error)
@@ -142,23 +156,40 @@ def scrape_all_pages(query_search: str = "", categories_search:str=""):
 
 # A probar!!
 search = input("Introduce el artículo a buscar: ")
-categorias = scrape_all_pages(query_search=search)
-print("Categorias devueltas!!"*3)
-if categorias:
-    for categoryName, categoriePriceLink in categorias.items():
+
+search_query = search.replace(" ", "-")
+url = f"{URL_BASE}{search_query}#D[A:{search_query}]"
+
+try:
+    response = requests.get(url, timeout=300)
+    _html = response.text
+    
+except:
+    print("Error de conexión")
+cat = get_categories(_html)
+print(cat) 
+
+# categorias:dict = scrape_all_pages(query_search=search)
+# print("Categorias devueltas!!"*3)
+if cat:
+    asd = {}
+    # new_categorias = categorias.copy()
+    for categoryName, categoriePriceLink in cat.items():
         
         print("Nombre de la categoria:")
         print(categoryName)
         
         for k, v in categoriePriceLink.items():
             print("**"*10)
-            print(k)
+            print(f"{k} CANTIDAD: {v.get("cantidad")}")
             print("**"*10)
-        link = categoriePriceLink.get("link")
-        if link:
-                scrape_all_pages(categories_search=link)
+            link = v.get("link")
 
-        
-print(categorias)
+            if link:
+                asd[k]=scrape_all_pages(categories_search=link)
 
+
+print(asd)
+for categoria, prod in asd.items():
+    print(f"{categoria}:  {len(prod)}")
 
