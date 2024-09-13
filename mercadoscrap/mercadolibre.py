@@ -311,17 +311,18 @@ if __name__ == '__main__':
             session.commit()
 
         for producto_nombre, info in productos.items():
-            # Evitar duplicados
-            producto_existente = session.query(Producto).filter_by(nombre=producto_nombre).first()
+            # Evitar duplicados de producto y precio
+            precio = info['Precio'][0]
+            precio_limpio = limpiar_precio(precio)
+            
+            producto_existente = session.query(Producto).filter_by(nombre=producto_nombre, precio=precio_limpio).first()
+            
             if not producto_existente:
                 # Insertar el producto con el primer precio
-                precio = info['Precio'][0]
-                precio_limpio = limpiar_precio(precio)
                 nuevo_producto = Producto(nombre=producto_nombre, precio=precio_limpio, categoria=categoria)
                 session.add(nuevo_producto)
 
-    session.commit()
-
+        session.commit()
 
     def mostrar_productos_por_categoria():
         categorias = session.query(Categoria).all()
