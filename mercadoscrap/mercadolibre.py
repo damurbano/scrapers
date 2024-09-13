@@ -243,14 +243,93 @@ def convert_to_dataframes(data):
     return dfs
 
 # # Convertir el diccionario a DataFrames
-# dataframes = convert_to_dataframes(data)
+#REMOVER DUPLICADOS PROCESO DE ETL
+
+
+def limpiar_precio(precio_str):
+    # Elimina el símbolo de moneda y separadores de miles
+    precio_limpio = precio_str.replace("$", "").replace(".", "").replace(",", ".").strip()
+    return float(precio_limpio)
+
+
+
 
 
 if __name__ == '__main__':
-    dfs =  convert_to_dataframes(main())
+    #dfs =  convert_to_dataframes()
 
-    # Mostrar DataFrames para cada categoría
-    for category, df in dfs.items():
-        print(f"Categoría: {category}")
-        print(df)
-        print("\n")
+
+    from datetime import datetime
+    from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+    from sqlalchemy.orm import relationship
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
+    from sqlalchemy.orm import relationship, sessionmaker
+    from sqlalchemy import create_engine
+
+    Base = declarative_base()
+
+    class Producto(Base):
+        __tablename__ = 'productos'
+        
+        id = Column(Integer, primary_key=True)
+        nombre = Column(String)
+        precio = Column(Float)
+        fecha_agregado = Column(DateTime, default=datetime.utcnow)  # Fecha de agregación por defecto
+        categoria_id = Column(Integer, ForeignKey('categorias.id'))
+        
+        categoria = relationship("Categoria", back_populates="productos")
+
+    class Categoria(Base):
+        __tablename__ = 'categorias'
+        
+        id = Column(Integer, primary_key=True)
+        nombre = Column(String)
+        
+        productos = relationship("Producto", back_populates="categoria")
+
+
+
+
+    # Crear el motor de base de datos (en este caso, usando SQLite y creando un archivo local)
+    engine = create_engine('sqlite:///mi_base_de_datos.db')
+
+    # Crear las tablas en la base de datos
+    Base.metadata.create_all(engine)
+
+    # Crear una sesión para interactuar con la base de datos
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+
+    # Insertar categorías y productos
+    for categoria_nombre, productos in main().items():
+        categoria = session.query(Categoria).filter_by(nombre=categoria_nombre).first()
+        if not categoria:
+            categoria = Categoria(nombre=categoria_nombre)
+            session.add(categoria)
+            session.commit()
+
+        for producto_nombre, info in productos.items():
+            # Evitar duplicados
+            producto_existente = session.query(Producto).filter_by(nombre=producto_nombre).first()
+            if not producto_existente:
+                # Insertar el producto con el primer precio
+                precio = info['Precio'][0]
+                precio_limpio = limpiar_precio(precio)
+                nuevo_producto = Producto(nombre=producto_nombre, precio=precio_limpio, categoria=categoria)
+                session.add(nuevo_producto)
+
+    session.commit()
+
+
+    def mostrar_productos_por_categoria():
+        categorias = session.query(Categoria).all()
+        for categoria in categorias:
+            productos = session.query(Producto).filter_by(categoria_id=categoria.id).all()
+            data = [{'Producto': p.nombre, 'Precio': p.precio} for p in productos]
+            df = pd.DataFrame(data)
+            print(f"Categoría: {categoria.nombre}")
+            print(df)
+
+    mostrar_productos_por_categoria()
