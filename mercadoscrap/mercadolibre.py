@@ -55,36 +55,60 @@ def get_categories(html: str):
     # Buscar el <h3> que le da el nombre a la categoria"
     h3 = soup.find("h3", {"aria-level": "3", "class": "ui-search-filter-dt-title"})
     nombre_categoria = h3.get_text(strip=True)
-    # print(nombre_categoria)
-
-    if h3 and h3.get_text(strip=True):
-        # Encontrar el contenedor padre <div class="ui-search-filter-dl">
-        div = h3.find_parent("div", {"class": "ui-search-filter-dl"})
-        if div:
-            # Extraer las categorías del <ul>
-            ul = div.find("ul")
-            categories = {nombre_categoria: {}}
-            for li in ul.find_all("li", {"class": "ui-search-filter-container"}):
-                a = li.find("a", {"class": "ui-search-link"})
-                if a:
-                    title = a.find("span", {"class": "ui-search-filter-name"}).get_text(
-                        strip=True
-                    )
-                    qty_text = a.find(
-                        "span", {"class": "ui-search-filter-results-qty"}
-                    ).get_text(strip=True)
-                    link = a.get("href")
-                    # print("Printeando link"+"**"*3)
-                    # print(link)
-                    qty = int(qty_text.strip("()"))
-                    categories[nombre_categoria].update({title:{"cantidad":qty,"link":link}})
-            #print(categories)
-            return categories
+    print(nombre_categoria)
+    if nombre_categoria == "Categorías":
+        if h3 and h3.get_text(strip=True) :
+            # Encontrar el contenedor padre <div class="ui-search-filter-dl">
+            div = h3.find_parent("div", {"class": "ui-search-filter-dl"})
+            if div:
+                # Extraer las categorías del <ul>
+                ul = div.find("ul")
+                categories = {nombre_categoria: {}}
+                for li in ul.find_all("li", {"class": "ui-search-filter-container"}):
+                    a = li.find("a", {"class": "ui-search-link"})
+                    if a:
+                        title = a.find("span", {"class": "ui-search-filter-name"}).get_text(
+                            strip=True
+                        )
+                        qty_text = a.find(
+                            "span", {"class": "ui-search-filter-results-qty"}
+                        ).get_text(strip=True)
+                        link = a.get("href")
+                        # print("Printeando link"+"**"*3)
+                        # print(link)
+                        qty = int(qty_text.strip("()"))
+                        categories[nombre_categoria].update({title:{"cantidad":qty,"link":link}})
+                #print(categories)
+                return categories
     else:
         print("No se encontró el encabezado 'Categorías'.")
+        categories = {}
+        spans = soup.select('ol.andes-breadcrumb span')
+        resultados = soup.find('span', class_='ui-search-search-result__quantity-results')
+        link = soup.find('h1', class_='ui-search-breadcrumb__title')
+        # Obtener el texto del último <span>
+        if spans:
+            ultimo_span_texto = spans[-1].get_text(strip=True)
+            print(f"Texto del último <span>: {ultimo_span_texto}")
+        textoResultados = resultados.get_text(strip=True)
+    
+        # Extraer solo los números usando una expresión regular
+        cantidad_resultados = re.search(r'\d+', textoResultados)
+        
+        if cantidad_resultados:
+            cantidad_resultados = cantidad_resultados.group()
+        if link:
+            link = link.get_text(strip=True)
+            link_=link.replace(" ","-")
+            final_link = f"https://listado.mercadolibre.com.ar/{link_}#D[A:{link}]"
+        
+            categories[ultimo_span_texto] = {ultimo_span_texto: {"cantidad":cantidad_resultados,"link":final_link}}
+            return categories
+        else:
+            print("No se encontraron <span> dentro del breadcrumb.")
+        
 
-
-def scrape_all_pages(query_search: str = "", categories_search:str=""):
+def scrape_all_pages(categories_search:str=""):
     """Recorre todas las páginas de resultados, buscando productos, precios y categorías"""
     # if query_search:
     #     search_query = query_search.replace(" ", "-")
@@ -189,7 +213,19 @@ if cat:
                 asd[k]=scrape_all_pages(categories_search=link)
 
 
-print(asd)
-for categoria, prod in asd.items():
-    print(f"{categoria}:  {len(prod)}")
+# print(asd)
+# for categoria, prod in asd.items():
+#     print(f"{categoria}:  {len(prod)}")
 
+# Iniciamos el ciclo por categoría
+for categoria, productos in asd.items():
+    # Reseteamos el contador de productos por cada categoría
+    total_productos = 0
+    print(f"\nCategoría: {categoria}")
+    
+    # Recorremos los productos dentro de la categoría
+    for nombre_producto, detalles in productos.items():
+        cantidad_precios = len(detalles['Precio'])  # Contamos la cantidad de precios
+        total_productos += cantidad_precios  # Sumamos al total de productos
+        
+    print(f"Total de productos en '{categoria}': {total_productos}")
