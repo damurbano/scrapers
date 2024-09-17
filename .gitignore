@@ -30,3 +30,6 @@ Thumbs.db
 *.bak
 *.old
 *.orig
+
+# Data Bases
+*.db
