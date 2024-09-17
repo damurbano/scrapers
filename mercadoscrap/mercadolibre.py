@@ -1,8 +1,37 @@
-import requests  # 🕸️ Solicitudes HTTP
-import re  # 🧙‍♂️ Expresiones regulares, la varita mágica para buscar patrones en el HTML
 import math  # 🧮 Matemáticas para calcular cuántas páginas hay en total
-from bs4 import BeautifulSoup
+import os
+import re  # 🧙‍♂️ Expresiones regulares, la varita mágica para buscar patrones en el HTML
+from datetime import datetime
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 import pandas as pd
+import requests  # 🕸️ Solicitudes HTTP
+import seaborn as sns
+from bs4 import BeautifulSoup
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    create_engine,
+)
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+
+matplotlib.use('QtAgg')
+######################################################################
+# Remuevo la base de datos anterior si es que existe######################################################################
+db_path ="mi_base_de_datos.db"
+
+if os.path.exists(db_path):
+    os.remove(db_path)
+    print(f"Base de datos '{db_path}' eliminada exitosamente.")
+else:
+    print(f"El archivo '{db_path}' no existe.")
+######################################################################
 
 # URL base de Mercado Libre.
 URL_BASE = "https://listado.mercadolibre.com.ar/"
@@ -54,13 +83,23 @@ def get_categories(html: str):
     soup = BeautifulSoup(html, "html.parser")
 
     # Buscar el <h3> que le da el nombre a la categoria"
-    h3 = soup.find("h3", {"aria-level": "3", "class": "ui-search-filter-dt-title"})
-    nombre_categoria = h3.get_text(strip=True)
-    print(nombre_categoria)
-    if nombre_categoria == "Categorías":
-        if h3 and h3.get_text(strip=True) :
+    h3_elements = soup.find_all("h3", {"aria-level": "3", "class": "ui-search-filter-dt-title"})
+
+    # Inicializa la variable nombre_categoria
+    nombre_categoria = None
+
+    # Recorre todos los elementos encontrados
+    for element in h3_elements:
+        # Obtén el texto del elemento, eliminando espacios en blanco innecesarios
+        text = element.get_text(strip=True)
+        # Comprueba si el texto es "Categorías"
+        if text == "Categorías":
+            nombre_categoria = element
+            
+    if nombre_categoria:
+        if nombre_categoria and nombre_categoria.get_text(strip=True) :
             # Encontrar el contenedor padre <div class="ui-search-filter-dl">
-            div = h3.find_parent("div", {"class": "ui-search-filter-dl"})
+            div = nombre_categoria.find_parent("div", {"class": "ui-search-filter-dl"})
             if div:
                 # Extraer las categorías del <ul>
                 ul = div.find("ul")
@@ -258,14 +297,7 @@ def limpiar_precio(precio_str):
 if __name__ == '__main__':
     #dfs =  convert_to_dataframes()
 
-    import os
-    from datetime import datetime
-    from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
-    from sqlalchemy.orm import relationship
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
-    from sqlalchemy.orm import relationship, sessionmaker
-    from sqlalchemy import create_engine
+    
 
     Base = declarative_base()
 
@@ -334,10 +366,133 @@ if __name__ == '__main__':
             print(df)
 
     mostrar_productos_por_categoria()
-    db_path ="mi_base_de_datos.db"
 
-    if os.path.exists(db_path):
-        os.remove(db_path)
-        print(f"Base de datos '{db_path}' eliminada exitosamente.")
+    # Conectar a la base de datos
+    conn = create_engine('sqlite:///mi_base_de_datos.db')
+
+    # Leer los datos de las tablas
+    productos_df = pd.read_sql_table('productos', conn)
+    categorias_df = pd.read_sql_table('categorias', conn)
+
+    # Ver los primeros registros para verificar
+    print(productos_df.head())
+    print(categorias_df.head())
+    
+    # Unir las tablas productos y categorias
+    merged_df = pd.merge(productos_df, categorias_df, left_on='categoria_id', right_on='id')
+
+    # Verificar la estructura del DataFrame combinado
+    print(merged_df.head())
+    print("***********"*6)
+
+
+    df_suma = merged_df.groupby('nombre_y')['precio'].sum().reset_index()
+    # Escalar los precios a miles, millones o billones
+    def scale_values(value):
+        if value >= 1_000_000_000:
+            return f'{value / 1_000_000_000:.1f}B $'  # Billones
+        elif value >= 1_000_000:
+            return f'{value / 1_000_000:.1f}M $'  # Millones
+        elif value >= 1_000:
+            return f'{value / 1_000:.1f}K $'  # Miles
+        else:
+            return f'{value:.0f} $'
+    # Configuración del gráfico
+    plt.figure(figsize=(12, 6))
+
+    # Aplicar la escala a los precios
+    df_suma['precio_scaled'] = df_suma['precio'].apply(scale_values)
+    # Crear el gráfico de barras con colores personalizados
+    colors = sns.color_palette('husl', len(df_suma))
+    barplot = sns.barplot(x='nombre_y', y='precio', data=df_suma, palette=colors)
+
+    # Añadir título y etiquetas
+    plt.title('Suma de precios por categoría')
+    plt.xlabel('Categoría')
+    plt.ylabel('Suma de Precios')
+
+    # Rotar las etiquetas de las categorías para mayor legibilidad
+    plt.xticks(rotation=45, ha='right')
+
+    # Ajustar el texto sobre las barras
+    for index, row in df_suma.iterrows():
+        barplot.text(
+            x=index,
+            y=row['precio'] + 0.02 * df_suma['precio'].max(),  # Ajustar la posición vertical del texto
+            s=df_suma.loc[index, 'precio_scaled'],  # Texto escalado
+            color='black',  # Color del texto
+            ha='center', 
+            va='bottom',
+            fontsize=10
+        )
+
+    # Ajustar el diseño para evitar el recorte de etiquetas
+    plt.tight_layout()
+
+    # Mostrar el gráfico
+    plt.show()
+    
+
+    
+    # Agrupar por categoría y contar la cantidad de productos
+    df_count = merged_df.groupby('nombre_y')['id_x'].count().reset_index()
+    df_count.rename(columns={'id_x': 'cantidad'}, inplace=True)
+
+    # Ordenar las categorías por cantidad en orden descendente
+    df_count = df_count.sort_values(by='cantidad', ascending=False)
+
+    # Número de categorías a mostrar sin agrupar
+    num_categories_to_show = 3
+
+    if len(df_count) > num_categories_to_show:
+        # Seleccionar las primeras 'num_categories_to_show' categorías
+        top_categories = df_count.head(num_categories_to_show)
+
+        # Agrupar las categorías restantes en "otros"
+        remaining_categories = df_count.iloc[num_categories_to_show:]
+        if not remaining_categories.empty:
+            otros_count = remaining_categories['cantidad'].sum()
+            # Crear un DataFrame para la categoría "otros"
+            otros_df = pd.DataFrame({'nombre_y': ['Otros'], 'cantidad': [otros_count]})
+            # Concatenar el DataFrame de las principales categorías con "otros"
+            top_categories = pd.concat([top_categories, otros_df], ignore_index=True)
     else:
-        print(f"El archivo '{db_path}' no existe.")
+        # Si hay 6 o menos categorías, mostrar todas
+        top_categories = df_count
+
+    # Configuración del gráfico de torta
+    plt.figure(figsize=(12, 8))
+
+   
+    # Crear el gráfico de torta con colores personalizados
+    colors = sns.color_palette('husl', len(top_categories))
+    wedges, texts, autotexts = plt.pie(
+        top_categories['cantidad'], 
+        labels=[f"{name}" for name in top_categories['nombre_y']], 
+        colors=colors, 
+        autopct='%1.1f%%',
+        startangle=140
+    )
+
+    # # Ajustar los porcentajes para que sean más legibles y ponerlos fuera del gráfico
+    # for wedge, autotext in zip(wedges, autotexts):
+    #     angle = (wedge.theta2 + wedge.theta1) / 2
+    #     x = (wedge.r + 0.1) * np.cos(np.radians(angle))
+    #     y = (wedge.r + 0.1) * np.sin(np.radians(angle))
+    #     autotext.set_fontsize(10)
+    #     autotext.set_color('black')
+    #     autotext.set_horizontalalignment('center')
+    #     autotext.set_verticalalignment('center')
+    #     autotext.set_x(x)
+    #     autotext.set_y(y)
+
+    # Añadir leyenda con cantidades
+    labels = [f"{name}: {count}" for name, count in zip(top_categories['nombre_y'], top_categories['cantidad'])]
+    plt.legend(labels, title='Categorías', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Añadir título
+    plt.title('Distribución de productos por categoría')
+
+    # Ajustar el diseño
+    plt.tight_layout()
+    plt.show()
