@@ -320,8 +320,9 @@ if __name__ == '__main__':
         
         productos = relationship("Producto", back_populates="categoria")
 
-
-
+###############################################################################
+###############################################################################
+#TODO: ORDENAR ESTA PARTE:
 
     # Crear el motor de base de datos (en este caso, usando SQLite y creando un archivo local)
     engine = create_engine('sqlite:///mi_base_de_datos.db')
@@ -367,132 +368,110 @@ if __name__ == '__main__':
 
     mostrar_productos_por_categoria()
 
-    # Conectar a la base de datos
-    conn = create_engine('sqlite:///mi_base_de_datos.db')
+###############################################################################
+###############################################################################
+    class DataVisualizer:
+        def __init__(self, db_url):
+            # Conectar a la base de datos
+            self.conn = create_engine(db_url)
+            self.productos_df = pd.read_sql_table('productos', self.conn)
+            self.categorias_df = pd.read_sql_table('categorias', self.conn)
+            self.merged_df = pd.merge(self.productos_df, self.categorias_df, left_on='categoria_id', right_on='id')
+        
+        def plot_suma_precios(self):
+            df_suma = self.merged_df.groupby('nombre_y')['precio'].sum().reset_index()
 
-    # Leer los datos de las tablas
-    productos_df = pd.read_sql_table('productos', conn)
-    categorias_df = pd.read_sql_table('categorias', conn)
+            # Escalar los precios a miles, millones o billones
+            def scale_values(value):
+                if value >= 1_000_000_000:
+                    return f'{value / 1_000_000_000:.1f}B $'  # Billones
+                elif value >= 1_000_000:
+                    return f'{value / 1_000_000:.1f}M $'  # Millones
+                elif value >= 1_000:
+                    return f'{value / 1_000:.1f}K $'  # Miles
+                else:
+                    return f'{value:.0f} $'
 
-    # Ver los primeros registros para verificar
-    print(productos_df.head())
-    print(categorias_df.head())
-    
-    # Unir las tablas productos y categorias
-    merged_df = pd.merge(productos_df, categorias_df, left_on='categoria_id', right_on='id')
+            # Configuración del gráfico
+            plt.figure(figsize=(12, 6))
+            df_suma['precio_scaled'] = df_suma['precio'].apply(scale_values)
+            colors = sns.color_palette('husl', len(df_suma))
+            barplot = sns.barplot(x='nombre_y', y='precio', data=df_suma, palette=colors)
 
-    # Verificar la estructura del DataFrame combinado
-    print(merged_df.head())
-    print("***********"*6)
+            plt.title('Suma de precios por categoría')
+            plt.xlabel('Categoría')
+            plt.ylabel('Suma de Precios')
+
+            plt.xticks(rotation=45, ha='right')
+
+            for index, row in df_suma.iterrows():
+                barplot.text(
+                    x=index,
+                    y=row['precio'] + 0.02 * df_suma['precio'].max(),  # Ajustar la posición vertical del texto
+                    s=df_suma.loc[index, 'precio_scaled'],  # Texto escalado
+                    color='black',  # Color del texto
+                    ha='center', 
+                    va='bottom',
+                    fontsize=10
+                )
+
+            plt.tight_layout()
+            plt.show()
+
+        def plot_distribucion_categorias(self):
+            df_count = self.merged_df.groupby('nombre_y')['id_x'].count().reset_index()
+            df_count.rename(columns={'id_x': 'cantidad'}, inplace=True)
+
+            # Ordenar las categorías por cantidad en orden descendente
+            df_count = df_count.sort_values(by='cantidad', ascending=False)
+
+            # Número de categorías a mostrar sin agrupar
+            num_categories_to_show = 3
+
+            if len(df_count) > num_categories_to_show:
+                # Seleccionar las primeras 'num_categories_to_show' categorías
+                top_categories = df_count.head(num_categories_to_show)
+
+                # Agrupar las categorías restantes en "otros"
+                remaining_categories = df_count.iloc[num_categories_to_show:]
+                if not remaining_categories.empty:
+                    otros_count = remaining_categories['cantidad'].sum()
+                    # Crear un DataFrame para la categoría "otros"
+                    otros_df = pd.DataFrame({'nombre_y': ['Otros'], 'cantidad': [otros_count]})
+                    # Concatenar el DataFrame de las principales categorías con "otros"
+                    top_categories = pd.concat([top_categories, otros_df], ignore_index=True)
+            else:
+                # Si hay 6 o menos categorías, mostrar todas
+                top_categories = df_count
+
+            # Configuración del gráfico de torta
+            plt.figure(figsize=(12, 8))
+
+        
+            # Crear el gráfico de torta con colores personalizados
+            colors = sns.color_palette('husl', len(top_categories))
+            wedges, texts, autotexts = plt.pie(
+                top_categories['cantidad'], 
+                labels=[f"{name}" for name in top_categories['nombre_y']], 
+                colors=colors, 
+                autopct='%1.1f%%',
+                startangle=140
+            )
 
 
-    df_suma = merged_df.groupby('nombre_y')['precio'].sum().reset_index()
-    # Escalar los precios a miles, millones o billones
-    def scale_values(value):
-        if value >= 1_000_000_000:
-            return f'{value / 1_000_000_000:.1f}B $'  # Billones
-        elif value >= 1_000_000:
-            return f'{value / 1_000_000:.1f}M $'  # Millones
-        elif value >= 1_000:
-            return f'{value / 1_000:.1f}K $'  # Miles
-        else:
-            return f'{value:.0f} $'
-    # Configuración del gráfico
-    plt.figure(figsize=(12, 6))
+            # Añadir leyenda con cantidades
+            labels = [f"{name}: {count}" for name, count in zip(top_categories['nombre_y'], top_categories['cantidad'])]
+            plt.legend(labels, title='Categorías', bbox_to_anchor=(1.05, 1), loc='upper left')
 
-    # Aplicar la escala a los precios
-    df_suma['precio_scaled'] = df_suma['precio'].apply(scale_values)
-    # Crear el gráfico de barras con colores personalizados
-    colors = sns.color_palette('husl', len(df_suma))
-    barplot = sns.barplot(x='nombre_y', y='precio', data=df_suma, palette=colors)
+            # Añadir título
+            plt.title('Distribución de productos por categoría')
 
-    # Añadir título y etiquetas
-    plt.title('Suma de precios por categoría')
-    plt.xlabel('Categoría')
-    plt.ylabel('Suma de Precios')
+            # Ajustar el diseño
+            plt.tight_layout()
+            plt.show()
 
-    # Rotar las etiquetas de las categorías para mayor legibilidad
-    plt.xticks(rotation=45, ha='right')
-
-    # Ajustar el texto sobre las barras
-    for index, row in df_suma.iterrows():
-        barplot.text(
-            x=index,
-            y=row['precio'] + 0.02 * df_suma['precio'].max(),  # Ajustar la posición vertical del texto
-            s=df_suma.loc[index, 'precio_scaled'],  # Texto escalado
-            color='black',  # Color del texto
-            ha='center', 
-            va='bottom',
-            fontsize=10
-        )
-
-    # Ajustar el diseño para evitar el recorte de etiquetas
-    plt.tight_layout()
-
-    # Mostrar el gráfico
-    plt.show()
-    
-
-    
-    # Agrupar por categoría y contar la cantidad de productos
-    df_count = merged_df.groupby('nombre_y')['id_x'].count().reset_index()
-    df_count.rename(columns={'id_x': 'cantidad'}, inplace=True)
-
-    # Ordenar las categorías por cantidad en orden descendente
-    df_count = df_count.sort_values(by='cantidad', ascending=False)
-
-    # Número de categorías a mostrar sin agrupar
-    num_categories_to_show = 3
-
-    if len(df_count) > num_categories_to_show:
-        # Seleccionar las primeras 'num_categories_to_show' categorías
-        top_categories = df_count.head(num_categories_to_show)
-
-        # Agrupar las categorías restantes en "otros"
-        remaining_categories = df_count.iloc[num_categories_to_show:]
-        if not remaining_categories.empty:
-            otros_count = remaining_categories['cantidad'].sum()
-            # Crear un DataFrame para la categoría "otros"
-            otros_df = pd.DataFrame({'nombre_y': ['Otros'], 'cantidad': [otros_count]})
-            # Concatenar el DataFrame de las principales categorías con "otros"
-            top_categories = pd.concat([top_categories, otros_df], ignore_index=True)
-    else:
-        # Si hay 6 o menos categorías, mostrar todas
-        top_categories = df_count
-
-    # Configuración del gráfico de torta
-    plt.figure(figsize=(12, 8))
-
-   
-    # Crear el gráfico de torta con colores personalizados
-    colors = sns.color_palette('husl', len(top_categories))
-    wedges, texts, autotexts = plt.pie(
-        top_categories['cantidad'], 
-        labels=[f"{name}" for name in top_categories['nombre_y']], 
-        colors=colors, 
-        autopct='%1.1f%%',
-        startangle=140
-    )
-
-    # # Ajustar los porcentajes para que sean más legibles y ponerlos fuera del gráfico
-    # for wedge, autotext in zip(wedges, autotexts):
-    #     angle = (wedge.theta2 + wedge.theta1) / 2
-    #     x = (wedge.r + 0.1) * np.cos(np.radians(angle))
-    #     y = (wedge.r + 0.1) * np.sin(np.radians(angle))
-    #     autotext.set_fontsize(10)
-    #     autotext.set_color('black')
-    #     autotext.set_horizontalalignment('center')
-    #     autotext.set_verticalalignment('center')
-    #     autotext.set_x(x)
-    #     autotext.set_y(y)
-
-    # Añadir leyenda con cantidades
-    labels = [f"{name}: {count}" for name, count in zip(top_categories['nombre_y'], top_categories['cantidad'])]
-    plt.legend(labels, title='Categorías', bbox_to_anchor=(1.05, 1), loc='upper left')
-
-    # Añadir título
-    plt.title('Distribución de productos por categoría')
-
-    # Ajustar el diseño
-    plt.tight_layout()
-    plt.show()
+    # Uso de la clase
+    db_url = 'sqlite:///mi_base_de_datos.db'
+    visualizer = DataVisualizer(db_url)
+    visualizer.plot_suma_precios()
+    visualizer.plot_distribucion_categorias()
