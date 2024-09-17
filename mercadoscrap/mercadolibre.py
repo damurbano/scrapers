@@ -447,17 +447,15 @@ if __name__ == '__main__':
             # Configuración del gráfico de torta
             plt.figure(figsize=(12, 8))
 
-        
             # Crear el gráfico de torta con colores personalizados
             colors = sns.color_palette('husl', len(top_categories))
-            wedges, texts, autotexts = plt.pie(
+            plt.pie(
                 top_categories['cantidad'], 
                 labels=[f"{name}" for name in top_categories['nombre_y']], 
                 colors=colors, 
                 autopct='%1.1f%%',
                 startangle=140
             )
-
 
             # Añadir leyenda con cantidades
             labels = [f"{name}: {count}" for name, count in zip(top_categories['nombre_y'], top_categories['cantidad'])]
