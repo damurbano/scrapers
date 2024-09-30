@@ -32,9 +32,7 @@ def main(input_=""):
     # print("Categorias devueltas!!"*3)
     if cat:
         finalDict = {}
-        for categoryName, categoriePriceLink in cat.items():            
-            print("Nombre de la categoria:")
-            print(categoryName)            
+        for categoryName, categoriePriceLink in cat.items():                   
             for k, v in categoriePriceLink.items():
                 print("**"*10)
                 print(f"{k} CANTIDAD: {v.get("cantidad")}")

@@ -5,9 +5,8 @@
 # MercadoLibre Scraper
 
 Este script permite realizar scraping de productos y precios en MercadoLibre Argentina a partir de una búsqueda específica, recorriendo todas las páginas de resultados.
-
-El espiritu de este modulo es usar *re*, *request* y *math*.
-Sin mucha sofisticacion... no hay selenium, ni BeautifulSoup, ni pandas, ni WebDriver. 😌
+Genera una base de datos relacional y la guarda en el path del proyecto.
+Tambien tiene una clase que se encarga de plotear algunos graficos.
 
 ## Características
 
@@ -24,26 +23,43 @@ Ejecuta el script y proporciona el término de búsqueda cuando se te solicite.
 
 ```bash
 
-python mercadolibre.py
+python main.py
 ```
 
 El script imprimirá en la consola los nombres y precios de los productos encontrados.
 
-```# TODO: Integrar un análisis de los datos, incluyendo métricas, kpis, indicadores``` 
-
-## Ejemplo de salida
+Ejemplo de salida
 
 ```bash
 
-Introduce el artículo a buscar: iPhone
-Scraping página 1: https://listado.mercadolibre.com.ar/iPhone#D[A:iPhone]
-Total de resultados: 2350
-Scraping página 2: https://listado.mercadolibre.com.ar/iPhone_Desde_51_NoIndex_True
+Introduce el artículo a buscar: cuchara madera
+********************
+Utensilios de Preparación CANTIDAD: 647
+********************
+Total de resultados: 645
+Scraping página 1: https://listado.mercadolibre.com.ar/hogar-muebles-jardin/bazar-cocina/utensilios-preparacion/cuchara-madera_NoIndex_True#applied_filter_id%3Dcategory%26applied_filter_name%3DCategor%C3%ADas%26applied_filter_order%3D3%26applied_value_id%3DMLA436273%26applied_value_name%3DUtensilios+de+Preparaci%C3%B3n%26applied_value_order%3D5%26applied_value_results%3D647%26is_custom%3Dfalse
+50 PRODUCTOS ENCONTRADOS 
+
+46 PRODUCTOS ÚNICOS
+Producto: 3 Utensilios Madera Bamboo Cocina Cuchara Espatula Tenedor, Precio: $3,599
+Producto: Cuchara Calada Hudson Utensilio Nylon Mango Madera, Precio: $4,988
+Producto: Set De 4 Utensilios Bambu Pinza 2 Espatulas Y Cuchara Color Madera, Precio: $3,873
+Producto: Cuchara De Madera 35cm Cocinera Ferpa, Precio: $2,363
 ...
-Producto: iPhone 13 Pro, Precio: $150.000
-Producto: iPhone 12 Mini, Precio: $120.000
+Producto: Cuchara Vertedora Para Plomo I Mabu, Precio: $33,600
+Producto: Cuchara De Madera Para Cocina Utensilios Kuchen Color Marrón, Precio: $3,775
+Producto: Cuchara De Madera 30 Cm - Jovifel Color Marrón, Precio: $2,615
 ...
 ```
+
+<p align="center">
+  <img src="../image/README/cuchara_madera1.png" alt="mercadoScrapper" width="600" height="400" />
+</p>
+
+<p align="center">
+  <img src="../image/README/cuchara_madera2.png" alt="mercadoScrapper" width="600" height="400" />
+</p>
+
 
 ## Notas
 

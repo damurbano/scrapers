@@ -99,7 +99,7 @@ def get_categories(html: str):
                         link = a.get("href")
                         # print("Printeando link"+"**"*3)
                         # print(link)
-                        qty = int(qty_text.strip("()"))
+                        qty = int(qty_text.strip("()").replace(".", ""))
                         categories[nombre_categoria].update(
                             {title: {"cantidad": qty, "link": link}}
                         )
